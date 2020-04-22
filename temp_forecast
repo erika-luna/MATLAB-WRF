@@ -1,0 +1,168 @@
+%clc;
+%clear;
+
+directory = 'june';
+
+%horas=24; %cantidad de horas sobre las que har? el promedio
+%horas=13; %diurno
+horas=11; %nocturno
+bandera_1ravez = 1;
+%dim_simulacion = 7; %Julio 30, abril 20
+dim_simulacion = 28;
+%nombre_experimento = 'wrf_urban_fdda_ometeotl';
+nombre_experimento = 'wrf_urban_2011';
+
+%load 'nueva_barra_temp.mat'
+load 'barra_temperatura.mat'
+
+load 'division_mexico.dat'
+load('cuenca_de_mexico.txt')
+
+
+%directorio_salidas = '/Volumes/Seagate/salidas_urban2060/wrf_fdda_urban_ometeotl/semana';
+%directorio_trabajo = '/Users/erikaluna/Documents/MATLAB/miztli/programas/urban_2060';
+%directorio_salidas = '/Volumes/Seagate/urban';
+%directorio_salidas = '/Volumes/Seagate/urban/diurno';
+directorio_salidas = '/Volumes/Seagate/urban/nocturno';
+directorio_trabajo = '/Users/erikaluna/Documents/MATLAB/miztli/programas/urban_2060';
+
+
+cd (directorio_salidas)
+archivos = dir('wrfout_d03_2011-06-*');
+contador_archivo=1;
+
+
+ for ar=1:dim_simulacion
+      archivo_nc = archivos(contador_archivo).name;
+      disp(archivo_nc(12:21))
+      if bandera_1ravez
+          XLATdata = ncread(archivo_nc,'XLAT');
+          lat = XLATdata(1,:);
+          dim_lat = length(lat); 
+          XLONGdata = ncread(archivo_nc,'XLONG');
+          long = XLONGdata(:,1);
+          dim_long = length(long);
+          precipitacion=zeros(dim_long,dim_lat,horas,dim_simulacion);
+          bandera_1ravez = 0;
+          T2=zeros(dim_long,dim_lat);
+      end
+      if bandera_1ravez == 0
+        for hrs=1:horas
+            disp(archivo_nc)
+            %%%%% fecha
+            %%%%%    Arreglo de fechas    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            anoUTC=str2num(archivo_nc(12:15));
+            mesUTC=str2num(archivo_nc(17:18));
+            diaUTC=str2num(archivo_nc(20:21));
+            horaUTC=str2num(archivo_nc(23:24));
+            minUTC=str2num('0');
+            segUTC=str2num('0');
+            MinDia = 60*24; %Minutos del dia
+            cd(directorio_trabajo)
+            %diajul=fecha2jul(mesUTC,diaUTC,anoUTC);
+            fracdia= horaUTC/24 + minUTC/MinDia + segUTC/(60*MinDia);
+            %fechaUTC=datestrad((diajul)+fracdia,0);
+            %%%%% dif=(diajul)+fracdia-.25;  %%%%% Sin horario de verano 
+            %dif=(diajul+1)+fracdia-.2083; %%%%% para horario de verano
+            %fechaLOCAL=datestrad(dif,0);
+            utc=datenum(str2num(archivo_nc(12:15)),str2num(archivo_nc(17:18)),...
+                 str2num(archivo_nc(20:21)),str2num(archivo_nc(23:24)),0,0);
+            %fechaUTC=datestrad(utc,0);
+            cd (directorio_salidas)
+            data=ncread(archivo_nc,'T2')-273.15;
+            T2=T2+data;
+            T2=max(T2);
+       
+%             
+% %             figure(1)
+% %             [c,h] = contourf(long,lat, data',24);
+% %             %colormap(nueva_barra_temp)
+% %             colormap(barra_temperatura)
+% %             caxis([-14 50])
+% %             colorbar;
+% %             set(h,'edgecolor','none')
+% %             grid on
+% %             axis square
+% %             hold on
+% %             plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+% %             axis([long(1)+0.05 long(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+% %             xlabel('Longitude','FontSize',18,...
+% %                'FontWeight','bold');
+% %             ylabel('Latitude','FontSize',18,...
+% %                'FontWeight','bold');
+% %             %title({['UTC            ' fechaUTC 'hrs'];['Local time   ' fechaLOCAL 'hrs']})
+% %             set(gca,'FontSize',16,'FontWeight', 'bold');
+% %             saveas(gcf,['T2_' nombre_experimento '_' num2str(ar) '_' num2str(hrs-1) '.tif'], 'tif');
+% %             close(gcf)           
+           contador_archivo=contador_archivo+1;
+           if contador_archivo<=length(archivos)
+              archivo_nc = archivos(contador_archivo).name;
+           end
+        end
+      end
+ end 
+ 
+ cd (directorio_trabajo)
+% 
+%T2_mean=T2./168%length(archivos); %cantidad de archivos en una semana
+%T2_mean=T2./672;%length(archivos); %cantidad de archivos en un mes
+%T2_mean_diurno=T2./364;%length(archivos); %cantidad de archivos en un mes d/n
+T2_mean_nocturno=T2./308;%length(archivos); %cantidad de archivos en un mes d/n
+%nombre_archivo = ['T2_mean_' nombre_experimento];
+%save(nombre_archivo, 'T2_mean');
+%nombre_archivo = ['T2_mean_diurno' nombre_experimento];
+%save(nombre_archivo, 'T2_mean_diurno');
+nombre_archivo = ['T2_mean_nocturno' nombre_experimento];
+save(nombre_archivo, 'T2_mean_nocturno');
+%figure(2)
+figure(3)
+%[c,h] = contourf(long,lat, T2_mean',24);
+%[c,h] = contourf(long,lat, T2_mean_diurno',24);
+[c,h] = contourf(long,lat, T2_mean_nocturno',24);
+colormap(barra_temperatura)
+caxis([-14 50])
+colorbar;
+set(h,'edgecolor','none')
+grid on
+axis square
+hold on
+plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+axis([long(1)+0.05 long(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+xlabel('Longitude','FontSize',18,...
+'FontWeight','bold');
+ylabel('Latitude','FontSize',18,...
+    'FontWeight','bold');
+title('Average surface temperature 2060')
+set(gca,'FontSize',16,'FontWeight', 'bold');
+%saveas(gcf,['T2_mean_' nombre_experimento '_' num2str(ar) '_' num2str(hrs-1) '.tif'], 'tif');
+%saveas(gcf,['T2_mean_diurno' nombre_experimento '_' num2str(ar) '_' num2str(hrs-1) '.tif'], 'tif');
+saveas(gcf,['T2_mean_nocturno' nombre_experimento '_' num2str(ar) '_' num2str(hrs-1) '.tif'], 'tif');
+close(gcf)           
+
+load 'barra_temp1.mat'
+
+%diferencia=T2_mean - T3_mean;
+%diferencia=T2_mean_diurno - T3_mean_diurno;
+diferencia=T2_mean_nocturno - T3_mean_nocturno;
+nombre_archivo = ['diferencia_' nombre_experimento];
+save(nombre_archivo, 'diferencia');
+%figure(2)
+%figure(3)
+figure(4)
+[c,h] = contourf(long,lat, diferencia',24);
+colormap(barra_temp1)
+caxis([-3 3])
+colorbar;
+set(h,'edgecolor','none')
+grid on
+axis square
+hold on
+plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+axis([long(1)+0.05 long(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+xlabel('Longitude','FontSize',18,...
+'FontWeight','bold');
+ ylabel('Latitude','FontSize',18,...
+ 'FontWeight','bold');
+title('Diferencia temperatura media 2060 vs. 2013')
+set(gca,'FontSize',16,'FontWeight', 'bold');
+saveas(gcf,['diferencia_' nombre_experimento '_' num2str(ar) '_' num2str(hrs-1) '.tif'], 'tif');
