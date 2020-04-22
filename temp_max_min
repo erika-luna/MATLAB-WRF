@@ -1,0 +1,145 @@
+%This script gets max and min temperatures from WRF variable T2.
+%If you have onw file for each observation see "stack_netcdf" script first. 
+
+%We load the following files that were generated in script "stack_netcdf"
+load('T2_junio_celsius.mat')
+load('fechas_junio.mat')
+
+%We create a vector for dates. 
+[anio,mes,dia]=datevec(dates);
+
+%%%%%%%%%% MAX TEMPERATURES %%%%%%%%%%%
+
+%MAX TEMPERATURE urban
+for i=1:28
+indices = find(dia(:,:) == i);
+temp_dia = T2_junio(:,:,indices);
+temp_max_dia = max(temp_dia,[],3);
+temp_max_dia_pixel(:,:,i) = temp_max_dia;
+end
+
+temp_max_periodo_pixel = max(temp_max_dia_pixel, [], 3);
+temp_max_mean = mean(temp_max_dia_pixel, 3);
+save('temp_max_dia_pixel.mat', 'temp_max_dia_pixel');
+
+%MAX TEMPERATURE ctrl
+for i=1:28
+indices = find(dia(:,:) == i);
+temp_dia_ctrl = T2_ctrl_junio(:,:,indices);
+temp_max_dia_ctrl = max(temp_dia_ctrl,[],3);
+temp_max_dia_pixel_ctrl(:,:,i) = temp_max_dia_ctrl;
+end
+
+temp_max_periodo_pixel_ctrl = max(temp_max_dia_pixel_ctrl, [], 3);
+temp_max_mean_ctrl = mean(temp_max_dia_pixel_ctrl, 3);
+save('temp_max_dia_pixel_ctrl.mat', 'temp_max_dia_pixel_ctrl');
+
+
+%%%%%%%%%% MIN TEMPERATURES %%%%%%%%%%%
+
+%MIN TEMPERATURE urban
+for i=1:28
+indices = find(dia(:,:) == i);
+temp_dia = T2_junio(:,:,indices);
+temp_min_dia = min(temp_dia,[],3);
+temp_min_dia_pixel(:,:,i) = temp_min_dia;
+end
+
+temp_min_periodo_pixel = min(temp_max_dia_pixel, [], 3);
+temp_min_mean = mean(temp_min_dia_pixel, 3);
+save('temp_min_dia_pixel.mat', 'temp_min_dia_pixel');
+
+%MIN TEMPERATURE control
+for i=1:28
+indices = find(dia(:,:) == i);
+temp_dia_ctrl = T2_ctrl_junio(:,:,indices);
+temp_min_dia_ctrl = min(temp_dia_ctrl,[],3);
+temp_min_dia_pixel_ctrl(:,:,i) = temp_min_dia_ctrl;
+end
+
+temp_min_periodo_pixel_ctrl = min(temp_max_dia_pixel_ctrl, [], 3);
+temp_min_mean_ctrl = mean(temp_min_dia_pixel_ctrl, 3);
+save('temp_min_dia_pixel_ctrl.mat', 'temp_min_dia_pixel_ctrl');
+
+%%%%%%%%%% THERMAL AMPLITUDE %%%%%%%%%%%
+amplitud_urban = temp_max_mean - temp_min_mean;
+amplitud_ctrl = temp_max_mean_ctrl - temp_min_mean_ctrl;
+
+
+%%%%%%%%%% FIGURES %%%%%%%%%%%
+
+working_directory = '/Users/erikaluna/Documents/MATLAB/miztli/programas/urban_2060';
+cd(working_directory)
+
+load 'division_mexico.dat'
+load('cuenca_de_mexico.txt')
+
+%TEMP MAX FIGURE
+figure(1)
+%[c,h] = contourf(long,lat, temp_max_mean',24);
+[c,h] = contourf(long,lat, temp_max_mean_ctrl',24);
+colormap(barra_temperatura)
+caxis([-14 50])
+colorbar;
+set(h,'edgecolor','none')
+grid on
+axis square
+hold on
+plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+axis([long(1)+0.05 long(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+xlabel('Longitude','FontSize',18,...
+'FontWeight','bold');
+ylabel('Latitude','FontSize',18,...
+    'FontWeight','bold');
+%title('Max temperature urban 2060')
+title('Max temperature control 2011')
+set(gca,'FontSize',16,'FontWeight', 'bold');
+%saveas(gcf,'temp_max_mean', 'tif');
+saveas(gcf, 'temp_max_mean_ctrl', 'tif');
+
+%TEMP MIN Figure
+figure(2)
+%[c,h] = contourf(long,lat, temp_min_mean',24);
+[c,h] = contourf(long,lat, temp_min_mean_ctrl',24);
+colormap(barra_temperatura)
+caxis([-14 50])
+colorbar;
+set(h,'edgecolor','none')
+grid on
+axis square
+hold on
+plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+axis([long(1)+0.05 long(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+xlabel('Longitude','FontSize',18,...
+'FontWeight','bold');
+ylabel('Latitude','FontSize',18,...
+    'FontWeight','bold');
+%title('Min temperature urban 2060')
+title('Min temperature control 2011');
+set(gca,'FontSize',16,'FontWeight', 'bold');
+%saveas(gcf,'temp_min_mean', 'tif');
+saveas(gcf,'temp_min_mean_ctrl', 'tif');
+
+
+%THERMAL AMPLITUDE Figure
+figure(3)
+%[c,h] = contourf(long,lat, amplitud_urban',24);
+[c,h] = contourf(long,lat, amplitud_ctrl',24);
+colormap(barra_temperatura)
+caxis([-14 50])
+colorbar;
+set(h,'edgecolor','none')
+grid on
+axis square
+hold on
+plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+axis([long(1)+0.05 long(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+xlabel('Longitude','FontSize',18,...
+'FontWeight','bold');
+ ylabel('Latitude','FontSize',18,...
+ 'FontWeight','bold');
+%title('Amplitud térmica urban 2060')
+title('Amplitud térmica control 2011')
+set(gca,'FontSize',16,'FontWeight', 'bold');
+%saveas(gcf,'amplitud_urban', 'tif');
+saveas(gcf,'amplitud_ctrl', 'tif');
