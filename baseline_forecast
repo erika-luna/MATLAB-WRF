@@ -17,11 +17,21 @@ load 'temp_min_mean_2060.mat'
 amplitud_max = temp_max_mean_2060 - temp_max_mean_2011;
 amplitud_min = temp_min_mean_2060 - temp_min_mean_2011;
 
+
+%FIGURAS
+directorio_figuras = '/Users/erikaluna/Documents/MATLAB/miztli/programas/urban_2060';
+cd(directorio_figuras)
+load 'division_mexico.dat'
+load 'cuenca_de_mexico.txt'
+load 'barra_temp1.mat'
+load 'barra_temperatura.mat'
+
 %Figura amplitud termica
 figure(1)
-[c,h] = contourf(long,lat, amplitud_max,24);
-colormap(barra_temperatura)
-caxis([-14 50])
+%[c,h] = contourf(lon,lat, amplitud_max,24);
+[c,h] = contourf(lon,lat, amplitud_min,24);
+colormap(barra_temp1)
+caxis([-5 5])
 colorbar;
 set(h,'edgecolor','none')
 grid on
