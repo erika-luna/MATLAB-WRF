@@ -32,8 +32,7 @@ lon = ncread(archivos, 'XLONG');
 save('T2_junio_lat.mat', 'lat');
 save('T2_junio_lon.mat', 'lon');
 
-%Creamos un vector de fechas
- 
+%Creamos una matriz para las fechas
 fecha_i = (datenum(2011,06,01,0,0,0));
 fecha_f = (datenum(2011,06,28,23,0,0)); 
 
@@ -51,3 +50,101 @@ end
 
 dates(1,1) = fecha_i;
 save('fechas_junio.mat', 'dates');
+
+
+%Creamos un vector para las fechas
+[anio,mes,dia]=datevec(dates);
+
+%MAX TEMPERATURE 2011
+for i=1:28
+indices = find(dia(:,:) == i);
+temp_dia = T2_2011(:,:,indices);
+temp_max_dia = max(temp_dia,[],3);
+temp_max_dia_pixel(:,:,i) = temp_max_dia;
+end
+
+temp_max_periodo_pixel_2011 = max(temp_max_dia_pixel, [], 3);
+temp_max_mean_2011 = mean(temp_max_dia_pixel, 3);
+save('temp_max_mean_2011.mat', 'temp_max_mean_2011');
+
+%MIN TEMPERATURE 2011
+for i=1:28
+indices = find(dia(:,:) == i);
+temp_dia = T2_2011(:,:,indices);
+temp_min_dia = min(temp_dia,[],3);
+temp_min_dia_pixel(:,:,i) = temp_min_dia;
+end
+
+temp_min_periodo_pixel = min(temp_max_dia_pixel, [], 3);
+temp_min_mean_2011 = mean(temp_min_dia_pixel, 3);
+save('temp_min_mean_2011.mat', 'temp_min_mean_2011');
+
+%AMPLITUD TERMICA 
+amplitud_2011 = temp_max_mean_2011 - temp_min_mean_2011;
+
+%FIGURAS
+directorio_figuras = '/Users/erikaluna/Documents/MATLAB/miztli/programas/urban_2060';
+cd(directorio_figuras)
+load 'division_mexico.dat'
+load 'cuenca_de_mexico.txt'
+load 'barra_temp1.mat'
+load 'barra_temperatura.mat'
+
+%Figura temp max
+figure(1)
+[c,h] = contourf(lon,lat, temp_max_mean_2011,24);
+colormap(barra_temp1)
+caxis([-40 40])
+colorbar;
+set(h,'edgecolor','none')
+grid on
+axis square
+hold on
+plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+axis([lon(1)+0.05 lon(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+xlabel('Longitude','FontSize',18,...
+'FontWeight','bold');
+ylabel('Latitude','FontSize',18,...
+    'FontWeight','bold');
+set(gca,'FontSize',16,'FontWeight', 'bold');
+saveas(gcf, 'temp_max_mean_2011', 'tif');
+
+%Figura temp min
+figure(2)
+[c,h] = contourf(lon,lat, temp_min_mean_2011,24);
+colormap(barra_temp1)
+caxis([-40 40])
+colorbar;
+set(h,'edgecolor','none')
+grid on
+axis square
+hold on
+plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+axis([lon(1)+0.05 lon(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+xlabel('Longitude','FontSize',18,...
+'FontWeight','bold');
+ylabel('Latitude','FontSize',18,...
+    'FontWeight','bold');
+set(gca,'FontSize',16,'FontWeight', 'bold');
+saveas(gcf,'temp_min_mean_2011', 'tif');
+
+%Figura amplitud termica
+figure(3)
+[c,h] = contourf(lon,lat, amplitud_2011,24);
+colormap(barra_temperatura)
+caxis([-14 50])
+colorbar;
+set(h,'edgecolor','none')
+grid on
+axis square
+hold on
+plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+axis([lon(1)+0.05 lon(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+xlabel('Longitude','FontSize',18,...
+'FontWeight','bold');
+ ylabel('Latitude','FontSize',18,...
+ 'FontWeight','bold');
+set(gca,'FontSize',16,'FontWeight', 'bold');
+saveas(gcf,'amplitud_2011', 'tif');
+
+
