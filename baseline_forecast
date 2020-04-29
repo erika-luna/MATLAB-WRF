@@ -1,0 +1,18 @@
+clc;
+clear;
+
+directorio_2011 = '/Volumes/Seagate/ctrl/diurno';
+cd(directorio_2011)
+
+load 'temp_max_mean_2011.mat'
+load 'temp_min_mean_2011.mat'
+
+directorio_2060 = '/Volumes/Seagate/urban/diurno';
+cd(directorio_2060)
+
+load 'temp_max_mean_2060.mat'
+load 'temp_min_mean_2060.mat'
+
+
+amplitud_max = temp_max_mean_2060 - temp_max_mean_2011;
+amplitud_min = temp_min_mean_2060 - temp_min_mean_2011;
