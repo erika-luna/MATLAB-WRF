@@ -1,0 +1,49 @@
+directorio_salidas = '/Volumes/Seagate/urban/diurno';
+
+cd(directorio_salidas)
+
+dia = 1:28; 
+horas = 0:23;
+archivos = dir('wrfout_d03_2011-06*');
+contador = 0;
+
+%Cada archivo representa la observación de una hora, por lo que juntamos
+%todos los archivos en uno solo con un ciclo 'for'. 
+
+for dia=1:28
+    for horas=1:24
+        contador = contador + 1;
+        archivos = (['wrfout_d03_2011-06-' num2str(dia,'%02d') '_' num2str(horas-1,'%02d') '.nc']);
+        T2_2060_wrf = ncread(archivos, 'T2');
+        T2_2060(:,:,contador) = T2_2060_wrf - 273.15;
+    end
+end
+
+save('T2_2060.mat', 'T2_2060');
+
+%Extraemos latitud y longitud
+lat = ncread(archivos, 'XLAT');
+lon = ncread(archivos, 'XLONG');
+
+save('T2_junio_lat.mat', 'lat');
+save('T2_junio_lon.mat', 'lon');
+
+%Creamos un vector de fechas
+ 
+fecha_i = (datenum(2011,06,01,0,0,0));
+fecha_f = (datenum(2011,06,28,23,0,0)); 
+
+fechas = fecha_i;
+
+contador = 1;    
+    
+while fechas < fecha_f
+    fechas = fechas + hours(1);
+    %str_fechas = datestr(fechas);
+    num_fechas = datenum(fechas); 
+    dates(contador + 1,1) = num_fechas;
+    contador = contador + 1;
+end
+
+dates(1,1) = fecha_i;
+save('fechas_junio.mat', 'dates');
