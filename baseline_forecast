@@ -16,3 +16,22 @@ load 'temp_min_mean_2060.mat'
 
 amplitud_max = temp_max_mean_2060 - temp_max_mean_2011;
 amplitud_min = temp_min_mean_2060 - temp_min_mean_2011;
+
+%Figura amplitud termica
+figure(1)
+[c,h] = contourf(long,lat, amplitud_max,24);
+colormap(barra_temperatura)
+caxis([-14 50])
+colorbar;
+set(h,'edgecolor','none')
+grid on
+axis square
+hold on
+plot(cuenca_de_mexico(:,1),cuenca_de_mexico(:,2),'k','LineWidth', 2);
+axis([lon(1)+0.05 lon(end)-0.05 lat(1)+0.1 lat(end)-0.01])
+xlabel('Longitude','FontSize',18,...
+'FontWeight','bold');
+ ylabel('Latitude','FontSize',18,...
+ 'FontWeight','bold');
+set(gca,'FontSize',16,'FontWeight', 'bold');
+saveas(gcf,'amplitud_max', 'tif');
